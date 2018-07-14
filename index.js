@@ -48,29 +48,30 @@ async function handlePush(repo) {
         await git.init();
         await git.addRemote('origin', repo.html_url);
     }
-    const update = await git.pull('origin', repo.default_branch);
 
+    await git.reset('hard');
+    //const update = await git.pull('origin', repo.default_branch);
 
     procs[repoId] = run('sh', ['deploy.sh'], {cwd: dir, detached: true});
 }
 
 http.createServer(function (req, res) {
         handler(req, res, function (err) {
-                res.statusCode = 404
-                res.end('no such location')
-                })
-        }).listen(7777)
+                res.statusCode = 404;
+                res.end('no such location');
+                });
+        }).listen(7777);
 
 handler.on('error', function (err) {
-        console.error('Error:', err.message)
-        })
+        console.error('Error:', err.message);
+        });
 
 handler.on('push', function (event) {
         console.log('Received a push event for %s to %s',
                 event.payload.repository.name,
-                event.payload.ref)
+                event.payload.ref);
         handlePush(event.payload.repository);
-        })
+        });
 
 handler.on('issues', function (event) {
         console.log('Received an issue event for %s action=%s: #%d %s',
@@ -78,4 +79,4 @@ handler.on('issues', function (event) {
                 event.payload.action,
                 event.payload.issue.number,
                 event.payload.issue.title)
-        }) 
+        });
