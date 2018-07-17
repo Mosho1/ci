@@ -1,11 +1,13 @@
-var http = require('http');
-var createHandler = require('github-webhook-handler');
-var handler = createHandler({ path: '/webhook', secret: 'supersecret' });
+const http = require('http');
+const createHandler = require('github-webhook-handler');
+const handler = createHandler({ path: '/webhook', secret: 'supersecret' });
 const gitP = require('simple-git/promise');
 const fs = require('fs');
 const {spawn} = require('child_process');
+const {LocalStorage} = require('node-localstorage');
+const kill = require('tree-kill');
 
-const procs = {};
+const procs = new LocalStorage('./procs');
 
 const run = (...args) => {
 
@@ -21,7 +23,6 @@ const run = (...args) => {
 
     spawned.on('exit', function (code) {
           console.log('child process exited with code ' + (code ? code.toString(): 'null'));
-          delete procs[spawned.pid];
     });
 
     return spawned;
@@ -30,12 +31,9 @@ const run = (...args) => {
 async function handlePush(repo) {
     const repoId = repo.name;
 
-    if (procs[repoId])  {
-        try {  
-            process.kill(-procs[repoId].pid);
-        } catch(e) {
-            console.error('could not kill old process', e);
-        }
+    const proc = procs.getItem(repoId);
+    if (proc) {
+        kill(proc);
     }
 
     const dir = __dirname + '/repos/' + repo.name;
@@ -49,10 +47,10 @@ async function handlePush(repo) {
         await git.addRemote('origin', repo.html_url);
     }
 
-    await git.reset('hard');
+    await git.reset(['--hard', 'origin/' + repo.default_branch]);
     //const update = await git.pull('origin', repo.default_branch);
 
-    procs[repoId] = run('sh', ['deploy.sh'], {cwd: dir, detached: true});
+    procs.setItem(repoId) = run('sh', ['deploy.sh'], {cwd: dir, detached: true}).pid;
 }
 
 http.createServer(function (req, res) {
