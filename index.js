@@ -50,7 +50,7 @@ async function handlePush(repo) {
     await git.reset(['--hard', 'origin/' + repo.default_branch]);
     //const update = await git.pull('origin', repo.default_branch);
 
-    procs.setItem(repoId) = run('sh', ['deploy.sh'], {cwd: dir, detached: true}).pid;
+    procs.setItem(repoId,  run('sh', ['deploy.sh'], {cwd: dir, detached: true}).pid);
 }
 
 http.createServer(function (req, res) {
