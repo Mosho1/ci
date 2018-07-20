@@ -44,7 +44,7 @@ async function handlePush(repo) {
     const isRepo = await git.checkIsRepo();
     if (!isRepo) {
         await git.init();
-        await git.addRemote('origin', repo.html_url);
+        await git.addRemote('origin', repo.ssh_url);
     }
 
     await git.fetch('origin');
