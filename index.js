@@ -6,6 +6,8 @@ const fs = require('fs');
 const {spawn} = require('child_process');
 const {LocalStorage} = require('node-localstorage');
 const kill = require('tree-kill');
+const path = require('path');
+const mkdirp = require('mkdirp');
 
 const procs = new LocalStorage('./procs');
 
@@ -36,10 +38,8 @@ async function handlePush(repo) {
         kill(proc);
     }
 
-    const dir = __dirname + '/repos/' + repo.name;
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-    }
+    const dir = path.resolve(__dirname, '..', 'repos', repo.name);
+    mkdirp.sync(dir);
     const git = gitP(dir);
     const isRepo = await git.checkIsRepo();
     if (!isRepo) {
