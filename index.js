@@ -47,6 +47,7 @@ async function handlePush(repo) {
         await git.addRemote('origin', repo.html_url);
     }
 
+    await git.fetch('origin');
     await git.reset(['--hard', 'origin/' + repo.default_branch]);
     //const update = await git.pull('origin', repo.default_branch);
 
